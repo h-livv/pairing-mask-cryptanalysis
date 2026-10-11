@@ -1,5 +1,7 @@
-# Foundation for Chintamani, Paul, and Sa, Section 5.
-# Levels 1 and 2 only, and one secret.
+# Two-level CHMSS demonstration based on Chintamani, Paul, and Sa, Section 5.
+# Run from the repository root: sage chmss_two_level_demo.sage
+# Fixed Level-1/Level-2 fixture with Q=7P and one secret, K1=8.
+# Uses the corrected extension encoding X^3+3X+42; see paper/references.md.
 
 # =================================================================
 # SETUP: BASE FIELD, EXTENSION FIELD, AND ELLIPTIC CURVE

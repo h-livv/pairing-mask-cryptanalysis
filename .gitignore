@@ -1,0 +1,27 @@
+security/
+__pycache__/
+
+# LaTex build artifacts
+attack/report/*.aux
+attack/report/*.bbl
+attack/report/*.bcf
+attack/report/*.blg
+attack/report/*.dvi
+attack/report/*.fdb_latexmk
+attack/report/*.fls
+attack/report/*.idx
+attack/report/*.ilg
+attack/report/*.ind
+attack/report/*.lof
+attack/report/*.log
+attack/report/*.lot
+attack/report/*.nav
+attack/report/*.out
+attack/report/*.ps
+attack/report/*.run.xml
+attack/report/*.snm
+attack/report/*.synctex
+attack/report/*.synctex.gz
+attack/report/*.toc
+attack/report/*.vrb
+attack/report/*.synctex(busy)

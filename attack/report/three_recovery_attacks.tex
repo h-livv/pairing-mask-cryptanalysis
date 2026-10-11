@@ -1,0 +1,379 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage[numbers]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{enumitem}
+\setlist{nosep}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+\title{Three Ways the Published Values Can Reveal the Secrets}
+\author{A step-by-step cryptanalysis of Chintamani, Paul, and Sa (2024)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Goal.} We examine three different ways the secret-masking rule
+in the paper can reveal secrets. The order is: (1) one secret is leaked,
+(2) no secret is leaked but two public values are available, and
+(3) only one public value of the corrected numerical fixture is available.
+
+\medskip
+\noindent
+\textbf{What these attacks do not do.} None of the attacks below breaks
+the elliptic-curve discrete logarithm problem (ECDLP). The ECDLP asks,
+in simple terms, whether one can recover a number $a$ from a known curve
+point $P$ and the point $aP$. The attacks here do not solve that problem
+or recover a hidden scalar from a curve point. Instead, they exploit the
+algebraic relationships between the values the scheme publishes, together
+with known constraints on the secrets and masks. The paper discusses the
+assumed difficulty of the ECDLP in its scheme description
+\cite[Sec.~3.1, p.~1459]{chintamani2024}. Our attacks target the published
+masking formula, not the underlying ECDLP.
+
+\medskip
+\noindent
+\textbf{Scope of the results.} The first two attacks follow from the
+paper's published-value formula under the conditions stated below.
+The third is demonstrated for the paper's small numerical example under
+the corrected extension-field encoding stated in Section~4.
+It is a demonstrated recovery for that fixture, not a general guarantee
+that one public value uniquely determines a secret; other valid inputs
+can leave multiple candidates.
+These are mathematical demonstrations of weaknesses in the specified
+construction; they do not, by themselves, establish whether these
+observations have been published previously.
+
+\section{The scheme's published values}
+
+The paper defines a bilinear pairing $e$ and uses the property
+\[
+    e(P,iQ)=e(P,Q)^i.
+\]
+Bilinearity is introduced in Section 2. In Section 3.1, the dealer defines
+\[
+    Q=\sum_j a_{j1}P,
+    \qquad
+    v_i=e(P,iQ)+K_i,
+\]
+and publishes the values $v_i$ \cite[Secs.~2 and~3.1, p.~1459]{chintamani2024}.
+
+For convenience, name the common mask
+\[
+    z=e(P,Q).
+\]
+Then the public-value formula becomes
+\begin{equation}
+    \boxed{v_i=z^i+K_i.}
+    \label{eq:public-values}
+\end{equation}
+The secret $K_i$ is an element of the prime field $\mathbb F_p$ (the paper chooses it from the integers $0,1,\ldots,p-1$). The mask $z$ is in the pairing's order-$\ell$ group $\mu_\ell$ in an extension field. The paper discusses this field compatibility in Remark 2 of Section 3.1 \cite{chintamani2024}.
+
+The important point is that all the public values use powers of the same $z$.
+
+\section{One-key recovery}
+
+\subsection{What does the attacker know?}
+
+Suppose the attacker learns the first secret $K_1$. This is the only secret the attacker needs to know at the start. The value $v_1$ is already public, so Equation~\eqref{eq:public-values} gives
+\[
+    v_1=z+K_1.
+\]
+Subtract the known secret from the public value:
+\begin{equation}
+    \boxed{z=v_1-K_1.}
+    \label{eq:recover-z-from-k1}
+\end{equation}
+Thus the common mask is recovered without reconstructing $Q$ or computing a pairing.
+
+\subsection{Why does this reveal the other secrets?}
+
+For every other published value, Equation~\eqref{eq:public-values} says
+\[
+    v_i=z^i+K_i.
+\]
+Rearranging gives
+\begin{equation}
+    \boxed{K_i=v_i-z^i.}
+    \label{eq:recover-all}
+\end{equation}
+The attacker knows $v_i$ because it is public, and now knows $z$ from Equation~\eqref{eq:recover-z-from-k1}. They can therefore calculate every $K_i$.
+
+\textbf{Conclusion.} If $K_1$ leaks, all the other secrets in this construction are exposed.
+
+\subsection{What if a different indexed secret leaks?}
+
+The same conclusion holds for a leaked $K_t$ whenever $t$ has a multiplicative inverse modulo $\ell$. From the public $v_t$,
+\[
+    z^t=v_t-K_t.
+\]
+Choose an integer $d$ such that $td=1+a\ell$ for some integer $a$. Since $z\in\mu_\ell$, we have $z^\ell=1$, and therefore
+\[
+    (v_t-K_t)^d=(z^t)^d=z^{td}
+    =z^{1+a\ell}=z(z^\ell)^a=z.
+\]
+So $z$ can again be recovered. In the paper's example, $\ell=37$ and there are four secrets, indexed $1$ through $4$. Each of those indices has an inverse modulo $37$. For $K_1$, the simpler subtraction in Equation~\eqref{eq:recover-z-from-k1} is enough.
+
+\section{Two-value recovery}
+
+This attack needs no leaked secret. It uses the first two public values, together with the fact that each $K_i$ lies in $\mathbb F_p$.
+
+\subsection{A field fact that removes the secrets}
+
+The field has characteristic $p$. In such a field,
+\begin{equation}
+    (x+y)^p=x^p+y^p.
+    \label{eq:frobenius}
+\end{equation}
+To see why, expand $(x+y)^p$ using the binomial theorem. Every middle term contains a binomial coefficient $\binom{p}{j}$ for $1\le j\le p-1$. Since $p$ is prime, each such coefficient is divisible by $p$ and is therefore zero in a field of characteristic $p$. Only $x^p$ and $y^p$ remain.
+
+Also, $K^p=K$ for every $K\in\mathbb F_p$: this follows from Fermat's little theorem for nonzero $K$, and is immediate for $K=0$.
+
+\subsection{Use the first public value}
+
+Write the first two public values as
+\[
+    v_1=z+K_1,
+    \qquad v_2=z^2+K_2.
+\]
+Raise $v_1$ to the $p$th power and subtract $v_1$:
+\begin{align*}
+    A&=v_1^p-v_1\\
+     &=(z+K_1)^p-(z+K_1)\\
+     &=z^p+K_1^p-z-K_1\\
+     &=z^p-z.
+\end{align*}
+The secret cancels. Everything on the left is public, so the attacker can calculate $A$.
+
+\subsection{Use the second public value}
+
+Do the same thing to $v_2$:
+\begin{align*}
+    B&=v_2^p-v_2\\
+     &=(z^2+K_2)^p-(z^2+K_2)\\
+     &=z^{2p}-z^2\\
+     &=(z^p)^2-z^2.
+\end{align*}
+From $A=z^p-z$, we get $z^p=z+A$. Substituting this into the expression for $B$ gives
+\begin{align*}
+    B&=(z+A)^2-z^2\\
+     &=z^2+2Az+A^2-z^2\\
+     &=2Az+A^2.
+\end{align*}
+Rearrange:
+\begin{equation}
+    \boxed{z=\frac{B-A^2}{2A}.}
+    \label{eq:two-value-z}
+\end{equation}
+This formula works when $A\ne0$ and $p$ is odd. Both conditions matter: if $A=0$, this particular division is not possible.
+
+\subsection{\texorpdfstring{When is $A$ nonzero?}{When is A nonzero?}}
+
+We found that $A=z^p-z$. Thus $A\ne0$ exactly when $z^p\ne z$. The elements satisfying $x^p=x$ in the extension field are exactly the elements of $\mathbb F_p$.
+
+Here is a short proof. Every element of $\mathbb F_p$ satisfies $x^p=x$, so the polynomial $X^p-X$ already has $p$ roots. A nonzero polynomial of degree $p$ cannot have more than $p$ roots in a field. Consequently it has no other roots in the extension field. Therefore
+\[
+    \boxed{A\ne0\quad\Longleftrightarrow\quad z\notin\mathbb F_p.}
+\]
+
+A useful sufficient condition comes from the pairing group. If $z\ne1$ and $z\in\mu_\ell$ for a prime $\ell$ that does not divide $p-1$, then $z\notin\mathbb F_p$. Otherwise $z$ would lie in the multiplicative group $\mathbb F_p^*$, whose size is $p-1$, and its order $\ell$ would have to divide $p-1$. This is impossible under the stated condition.
+
+The identity case can also be resolved when $\gcd(\ell,p-1)=1$.
+If $A=0$, then $z\in\mathbb F_p^*\cap\mu_\ell$. This intersection has
+order $\gcd(\ell,p-1)$, so in that case $z=1$ and $K_i=v_i-1$.
+The toy two-value script implements this branch. The BLS12-381 dealer
+excludes identity masks, and its attacker rejects $A=0$ as outside that
+experiment's inputs.
+
+Once $z$ is recovered from Equation~\eqref{eq:two-value-z}, calculate every secret using
+\[
+    \boxed{K_i=v_i-z^i.}
+\]
+
+\textbf{Conclusion.} Under the conditions above, two public values are enough to recover the mask and then all the secrets. No secret needs to leak first.
+
+\section{One-value recovery: the corrected numerical fixture}
+
+This demonstration uses only the first public value $v_1$ and the known structure of the mask. We work through the paper's numerical example under the corrected encoding, where $p=47$, the mask lies in $\mu_{37}$, and $K_1=8$ \cite[Sec.~5, pp.~1462--1463]{chintamani2024}.
+
+\subsection{What is known?}
+
+The displayed public value is
+\[
+    v_1=37\alpha^2+28\alpha+12,
+\]
+where the working Sage reproduction represents the extension field using
+\[
+    \alpha^3+3\alpha+42=0.
+\]
+A note on the numerical representation appears at the end of this section.
+
+The attacker knows $v_1$, but not $K_1$. They try a candidate $k\in\mathbb F_{47}$ for the secret. This candidate would imply the mask
+\[
+    w=v_1-k.
+\]
+For this to be the real mask, it must satisfy
+\begin{equation}
+    w^{37}=1,
+    \label{eq:order-check}
+\end{equation}
+because the mask belongs to the order-$37$ group $\mu_{37}$.
+
+Checking Equation~\eqref{eq:order-check} for all $47$ possible values of $k$ would already be a finite, direct test for this small example. We can first narrow the candidates using a cubic equation.
+
+\subsection{A necessary condition: the norm}
+
+For an element $w$ in this degree-three extension, define its norm by
+\[
+    N(w)=w\,w^{47}\,w^{47^2}.
+\]
+The three factors are the element and its two Frobenius conjugates. Their product lies in $\mathbb F_{47}$; raising the product to the $47$th power simply cycles the three factors.
+
+If $w$ is a valid mask, then $w^{37}=1$. Hence
+\begin{align*}
+    N(w)&=w^{1+47+47^2}\\
+        &=w^{2257}\\
+        &=(w^{37})^{61}=1,
+\end{align*}
+where $2257=1+47+47^2=37\cdot61$. So every valid mask must satisfy $N(w)=1$.
+
+For the candidate $w=v_1-k$, the condition is
+\begin{equation}
+    N(v_1-k)=(v_1-k)(v_1^{47}-k)(v_1^{47^2}-k)=1.
+    \label{eq:norm-condition}
+\end{equation}
+The substitutions $k^{47}=k$ and $k^{47^2}=k$ are valid because $k\in\mathbb F_{47}$. In the stated field representation, direct field arithmetic gives
+\[
+\begin{aligned}
+    v_1^{47}&=22+27\alpha+42\alpha^2,\\
+    v_1^{47^2}&=15+39\alpha+15\alpha^2.
+\end{aligned}
+\]
+Multiplying the three factors in Equation~\eqref{eq:norm-condition}, and reducing all coefficients modulo $47$ using $\alpha^3=-3\alpha-42$, gives
+\[
+    N(v_1-k)=12-k^3+2k^2-18k.
+\]
+Set this equal to $1$ and rearrange:
+\[
+    k^3-2k^2+18k-11=0\pmod{47}.
+\]
+The cubic factors as
+\[
+    \boxed{(k-8)(k-12)(k-29)=0\pmod{47}.}
+\]
+Thus the norm condition leaves three candidates:
+\[
+    k\in\{8,12,29\}.
+\]
+This condition is necessary, but it is not sufficient: it tells us the candidate mask has norm $1$, not yet that its 37th power equals $1$.
+
+\subsection{Check which candidate is a valid mask}
+
+Now test the original requirement $w^{37}=1$ for each remaining candidate. Using the same field representation gives
+\[
+\begin{array}{c|c}
+ k & (v_1-k)^{37}\\ \hline
+ 8  & 1\\
+ 12 & 42+5\alpha+41\alpha^2\\
+ 29 & 18+17\alpha+9\alpha^2
+\end{array}
+\]
+The last two results are not $1$: in this field representation, an element equals $1$ only when its constant coefficient is $1$ and its $\alpha$ and $\alpha^2$ coefficients are both zero. Therefore $k=12$ and $k=29$ are rejected, leaving
+\[
+    \boxed{K_1=8.}
+\]
+The attacker has recovered the first secret from one public value and the mask's mathematical constraints. This unique result is established for this numerical example. Other valid
+public values can leave multiple keys even after the subgroup test, including
+within the same field and subgroup. The implementation reports all surviving
+candidates rather than assuming uniqueness.
+
+\textbf{Representation note.} Section 5 of the paper gives $X^3+X+4$ as an example of an irreducible cubic, while the working Sage reproduction used for the displayed point and value calculations uses $X^3+3X+42$. The coefficient calculations above are for the latter representation. Coordinates and coefficients tied to one defining polynomial should not be mixed with another without converting the representation \cite[Sec.~5, pp.~1462--1463]{chintamani2024}.
+
+\section{Summary}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Attack & Attacker starts with & Main step \\
+\midrule
+One-key recovery & One known secret $K_1$ & $z=v_1-K_1$ \\
+Two-value recovery & Public $v_1,v_2$ & Remove secrets with $p$th powers \\
+One-value fixture & Public $v_1$ in the corrected fixture & Norm gives 3 candidates; test $w^{37}=1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All three analyses use the published relationship $v_i=z^i+K_i$. The first is a consequence of one secret being compromised. The second shows how two public values can be enough under a stated field condition. The third uses additional structure in the paper's particular small numerical example.
+
+\clearpage
+\section{Current repository implementation}
+
+The main script, \path{chmss_two_level_demo.sage}, constructs and reconstructs
+point shares through Levels 1 and 2 and recovers one secret, $K_1=8$.
+Its fixed toy fixture uses $Q=7P$. It does not implement the full
+three-level example or submitted-share verification.
+
+The attack directories implement the masking layer separately:
+\begin{itemize}
+    \item \path{attack/one_key/toy_model/}: two toy keys with $Q=7P$;
+    the attacker uses the fixed simulated leak \texttt{LEAKED\_K1=8}.
+    \item \path{attack/two_values/toy_model/}: four toy keys with $Q=7P$;
+    the attacker receives no compromised key.
+    \item \path{attack/one_value/}: only the first published value of the
+    corrected $Q=13P$ fixture. The attacker enumerates all 47 possible
+    keys, tests their candidate masks' norms, then applies $w^{37}=1$.
+    It reproduces the candidates $8,12,29$ and the unique survivor $8$
+    calculated in Section~4, without reading the expected key.
+    This demonstrates recovery for the corrected numerical fixture;
+    other valid inputs can leave multiple candidates.
+    \item \path{attack/one_key/bls12_381/} and
+    \path{attack/two_values/bls12_381/}: four random 256-bit keys embedded
+    in the BLS12-381 prime field, using standard G1/G2 generators and a
+    reduced Tate pairing. These examples instantiate the same masking
+    relation, rather than the complete hierarchical protocol.
+\end{itemize}
+
+Each experiment has \texttt{dealer.sage}, \texttt{attacker.sage}, and a
+\texttt{public\_values.txt} transcript beside the scripts. Toy one-key and
+two-value transcripts use comma-separated power-basis coefficients;
+the one-value transcript contains three space-separated coefficients.
+The BLS transcripts use JSON. The public files contain masked values,
+not private keys or masks. Dealers overwrite their own public transcript.
+The BLS one-key dealer also writes a separate \texttt{dealer\_truth.json}
+record for verification and prints the first key to model a compromise.
+
+All experiment scripts run directly from the repository root as
+\texttt{sage <path>.sage}, with no command-line flags or prior Sage session.
+The BLS one-key attacker prompts for the compromised first key. Its verifier
+supplies that input automatically. Both \texttt{curve.py} helpers can also
+be executed directly with Sage; they define functions rather than run an
+attack. Paths and helper imports resolve relative to the script or module.
+Commands and full input details are in \path{attack/README.md}.
+
+Only the BLS directories include \texttt{verify\_attack.sage}. Each compares
+all four recovered keys with dealer ground truth in two fresh trials.
+The two-value verifier uses separate namespaces within one process; the
+one-key verifier uses Sage subprocesses and moves the private ground-truth
+record away before supplying only $K_1$ to the attacker. It deletes that
+record during cleanup. Neither mechanism is an operating-system sandbox.
+The toy directories have no separate ground-truth verifier; the one-value
+candidate set establishes consistency with the public constraints, and a
+singleton set establishes unique recovery under those constraints.
+
+\begin{thebibliography}{1}
+\bibitem{chintamani2024}
+M.~Chintamani, P.~Paul, and L.~Sa,
+``Conjunctive Hierarchical Multi-Secret Sharing Scheme using Elliptic Curves,''
+\emph{Indian Journal of Pure and Applied Mathematics}, vol.~55, pp.~1456--1464, 2024.
+\href{https://doi.org/10.1007/s13226-023-00450-x}{doi:10.1007/s13226-023-00450-x}.
+\end{thebibliography}
+
+\end{document}
