@@ -19,8 +19,8 @@ F47 = GF(47)
 # Elliptic curve y^2 = x^3 + 4x + 15 over F_47.
 E47 = EllipticCurve(F47, [4, 15])
 
-# Construct the extension field F_(47^3) using the same polynomial
-# as in chmss_two_level_demo.sage. This public encoding corrects the paper's
+# Construct the extension field F_(47^3) using the corrected polynomial
+# described in paper/references.md. This public encoding corrects the paper's
 # inconsistent suggested polynomial; see attack/README.md.
 F47x = PolynomialRing(F47, "X")
 X = F47x.gen()
@@ -35,7 +35,7 @@ P = E(24*alpha + 1, 22*alpha**2 + 10*alpha + 23)
 # =================================================================
 # CONSTRUCTION: THE DEALER'S MASK
 # =================================================================
-# In chmss_two_level_demo.sage, the first coefficients are
+# The local fixture uses the first coefficients
 #
 #     a11 = 11,  a21 = 33.
 #

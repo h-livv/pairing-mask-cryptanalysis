@@ -4,7 +4,7 @@ import sys
 PUBLIC_FILE = Path(sys.argv[0]).resolve().with_name("public_values.txt")
 
 # Finite-field attack experiment on the secret-masking step.
-# The dealer creates two public values for Levels 1 and 2.
+# This local fixture sets Q = (11 + 33)P = 7P and publishes two masked values.
 
 # =================================================================
 # SETUP: BASE FIELD, EXTENSION FIELD, AND ELLIPTIC CURVE
@@ -16,8 +16,8 @@ F47 = GF(47)
 # Elliptic curve y^2 = x^3 + 4x + 15 over F_47.
 E47 = EllipticCurve(F47, [4, 15])
 
-# Construct the extension field F_(47^3) using the same polynomial
-# as in chmss_two_level_demo.sage.
+# Construct the extension field F_(47^3) using the corrected polynomial
+# described in paper/references.md.
 F47x = PolynomialRing(F47, "X")
 X = F47x.gen()
 Fqk = F47.extension(X**3 + 3*X + 42, "alpha")
@@ -31,7 +31,7 @@ P = E(24*alpha + 1, 22*alpha**2 + 10*alpha + 23)
 # =================================================================
 # CONSTRUCTION: THE DEALER'S MASK
 # =================================================================
-# In chmss_two_level_demo.sage, the first coefficients are
+# The local fixture uses the first coefficients
 #
 #     a11 = 11,  a21 = 33.
 #

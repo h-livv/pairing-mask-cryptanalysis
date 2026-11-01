@@ -1,7 +1,8 @@
 # Attacks on the secret-masking step
 
-This directory implements two algebraic attacks and demonstrates one-value
-recovery for a corrected numerical fixture of the masking rule in
+This directory implements the three attacks analyzed in the accompanying
+report: two algebraic recovery attacks and a one-value candidate search for
+a corrected numerical fixture of the masking rule in
 Chintamani, Paul, and Sa's *Conjunctive Hierarchical Multi-Secret
 Sharing Scheme using Elliptic Curves*. See the
 [reference and implementation mapping](../paper/references.md).
@@ -45,9 +46,17 @@ or share-distribution protocol. The BLS12-381 experiments use
 `G1.tate_pairing(G2, r, 12, q=p)` over `Fp^12`; they are algebraic recovery
 experiments, without performance measurements.
 
-The derivations and worked one-value calculation are in the
-[LaTeX report](report/three_recovery_attacks.tex) and its
-[compiled PDF](report/three_recovery_attacks.pdf).
+The report's computational examples correspond to these directories:
+
+- two-public-value recovery: `two_values/toy_model/` and
+  `two_values/bls12_381/`;
+- recovery after one secret disclosure: `one_key/toy_model/` and
+  `one_key/bls12_381/`;
+- one-public-value candidate search: `one_value/`.
+
+The derivations and worked one-value calculation are in the authoritative
+[LaTeX report](../gen_report/pairing_mask_cryptanalysis.tex) and its
+[compiled PDF](../gen_report/pairing_mask_cryptanalysis.pdf).
 
 ## Two public values: Frobenius recovery
 
@@ -113,8 +122,7 @@ The toy fields use `X^3+3X+42` with power basis `1,alpha,alpha^2`, and curve
 `y^2=x^3+4x+15`. This polynomial corrects the paper's inconsistent suggested
 encoding, as explained in [paper/references.md](../paper/references.md).
 The one-key and two-value toy dealers use coefficients `a11=11`, `a21=33`,
-so `Q=7P`, matching
-[chmss_two_level_demo.sage](../chmss_two_level_demo.sage).
+so `Q=7P`, matching the local two-level fixture.
 The paper's three-level example adds `a31=6` and uses `Q=13P`; it is distinct
 from these local transcripts.
 
@@ -140,7 +148,7 @@ The attacker enumerates all 47 possible keys, retains those with norm 1,
 then checks the exact subgroup condition `w^37=1`. For the displayed
 fixture the norm candidates are `[8,12,29]`, and only `8` survives. This
 demonstrates recovery for this corrected numerical fixture, as calculated in
-[the LaTeX report](report/three_recovery_attacks.tex).
+[the LaTeX report](../gen_report/pairing_mask_cryptanalysis.tex).
 
 The norm condition alone is insufficient. Even after subgroup filtering,
 some other valid transcripts have two consistent keys. The attacker reports

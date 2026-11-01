@@ -1,25 +1,54 @@
-# Elliptic Curve Multi-Secret Sharing
+# Pairing-mask cryptanalysis
 
-SageMath implementation and security experiments for Chintamani, Paul, and Sa's *Conjunctive Hierarchical Multi-Secret Sharing Scheme using Elliptic Curves*.
+This repository contains SageMath demonstrations for the three attacks analyzed in the report, [Two-Public-Value Recovery in Pairing-Based Additive Masking with Prime-Field Secrets](gen_report/pairing_mask_cryptanalysis.pdf). The authoritative report source is [pairing_mask_cryptanalysis.tex](gen_report/pairing_mask_cryptanalysis.tex). The attacks target the masking rule
 
-## Scope
+\[
+v_i = K_i + z^i,\qquad K_i\in\mathbb F_p,\quad z\in\mu_\ell.
+\]
 
-[`chmss_two_level_demo.sage`](chmss_two_level_demo.sage) demonstrates the scheme through Levels 1 and 2 with one secret. It constructs scalar and elliptic-curve point shares, reconstructs the coefficient points and \(Q\), and recovers \(K_1=8\) using the modified Tate pairing. The example uses toy parameters and the corrected extension-field configuration documented in [`paper/references.md`](paper/references.md).
+The attacks exploit the field-valued masking relation. They do not solve the elliptic-curve discrete logarithm problem, invert a pairing, or establish that pairing-based secret sharing in general is insecure.
 
-The repository also implements two algebraic attacks and a fixture-specific recovery demonstration for the scheme's secret-masking construction:
+## Attacks and computational scope
 
-- **One-key recovery:** Recover the remaining secrets after one secret is compromised.
-- **Two-value recovery:** Recover the mask and secrets from two public masked values, without a prior secret compromise.
-- **One-value recovery demonstration:** Recover \(K_1=8\) from a single public masked value in the corrected numerical fixture. Other valid inputs can leave multiple candidates.
+| Attack | Attacker input | Included demonstration | What it establishes |
+| --- | --- | --- | --- |
+| Two-public-value recovery | `v1`, `v2`, public field parameters | Toy model and BLS12-381 masking-layer examples | Recovers `z`, then all keys in the published transcript, under the report's stated conditions. |
+| Recovery after one secret disclosure | Public transcript and a suitable disclosed `K_t` | Toy model and BLS12-381 masking-layer examples | Recovers `z` when `gcd(t, ell)=1`, then recovers the transcript's keys. |
+| One-public-value candidate search | `v1` and public field/subgroup parameters | Corrected `p=47`, `ell=37` numerical fixture | Enumerates all prime-field keys consistent with the mask constraint; the fixture has one candidate, but uniqueness is not general. |
 
-The one-key and two-value attacks include both toy-field and BLS12-381 experiments. The BLS12-381 experiments include verification scripts that compare the recovered secrets against freshly generated dealer secrets.
+The attacker input is the public transcript of masked values, `public_values.txt`, and public field/subgroup parameters. The dealer scripts create reproducible example transcripts; in the scheme, an attacker would read the corresponding published values. The one-key attack additionally needs the disclosed `K1`. The BLS12-381 examples instantiate the masking layer and are not implementations of the full hierarchical protocol. The one-value example uses the corrected extension-field representation described in [the publication map](paper/references.md). The toy one-key example has two public values; the BLS12-381 one-key example has four. Its verifiers compare recovered keys with dealer-generated ground truth in two fresh runs. These checks support those demonstrations, not arbitrary inputs or a general security proof.
 
-The report presents the three recovery arguments step by step:
-- [Read the report (PDF)](attack/report/three_recovery_attacks.pdf)
-- [View the LaTeX source](attack/report/three_recovery_attacks.tex)
+## Reproduce
 
-These attacks exploit algebraic relationships in the published values; they do not break the elliptic-curve discrete logarithm problem (ECDLP).
+The report identifies SageMath 10.9. Run commands from the repository root. Dealers overwrite only their own public transcript.
 
-The scheme demonstration currently covers two levels and one secret. The attack experiments focus on the secret-masking step rather than implementing the complete hierarchical scheme or benchmarking its performance. One-value recovery is demonstrated for the specified numerical example; it is not claimed to uniquely recover the secret in every configuration.
+```sh
+# Public-only attack: two masked values
+sage attack/two_values/toy_model/dealer.sage
+sage attack/two_values/toy_model/attacker.sage
+sage attack/two_values/bls12_381/verify_attack.sage
 
-For the attack mathematics, experiment structure, setup, and run instructions, see [`attack/README.md`](attack/README.md). The source-paper citation and implementation mapping are provided in [`paper/references.md`](paper/references.md).
+# Attack after disclosure of K1
+sage attack/one_key/toy_model/dealer.sage
+sage attack/one_key/toy_model/attacker.sage
+sage attack/one_key/bls12_381/verify_attack.sage
+
+# Candidate search from a single public value
+sage attack/one_value/dealer.sage
+sage attack/one_value/attacker.sage
+```
+
+For a fresh BLS12-381 transcript, run the matching dealer and attacker directly. The one-key attacker prompts for the leaked `K1`; its verifier supplies that input automatically. The one-value attacker reports every consistent candidate, including ambiguous cases. Full experiment details, transcript formats, and validation boundaries are in [`attack/README.md`](attack/README.md).
+
+## Repository map
+
+- [`attack/two_values/`](attack/two_values/): public-only recovery using Frobenius identities.
+- [`attack/one_key/`](attack/one_key/): recovery following disclosure of one secret.
+- [`attack/one_value/`](attack/one_value/): candidate search for the corrected numerical fixture.
+- [`gen_report/`](gen_report/): authoritative report LaTeX source and compiled PDF.
+- [`CITATION.cff`](CITATION.cff): citation metadata for the software repository.
+- [`paper/references.md`](paper/references.md): publications used, input provenance, fixtures, and numerical-encoding caveats.
+
+## Citation and scope
+
+The code is released under the MIT License. If using it, cite the report and publications listed in [`paper/references.md`](paper/references.md). The attacks apply to the specified common-base, prime-field-secret masking pattern. The computations illustrate the algebra under named finite-field fixtures; they do not claim hardware performance, a complete audit of the hierarchical protocol, or general cryptographic insecurity of pairings.

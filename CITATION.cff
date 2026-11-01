@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software or its computational examples, please cite the
+  accompanying report and the source scheme paper.
+title: Pairing-mask cryptanalysis: SageMath computational examples
+license: MIT
+url: https://github.com/h-livv/elliptic-curve-mss
+authors:
+  - family-names: Singh
+    given-names: Harliv
