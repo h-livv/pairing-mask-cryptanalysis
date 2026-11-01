@@ -17,7 +17,7 @@ F47 = GF(47)
 E47 = EllipticCurve(F47, [4, 15])
 
 # Construct the extension field F_(47^3) using the corrected polynomial
-# described in paper/references.md.
+# described in references/references.md.
 F47x = PolynomialRing(F47, "X")
 X = F47x.gen()
 Fqk = F47.extension(X**3 + 3*X + 42, "alpha")

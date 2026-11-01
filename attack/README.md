@@ -5,13 +5,11 @@ report: two algebraic recovery attacks and a one-value candidate search for
 a corrected numerical fixture of the masking rule in
 Chintamani, Paul, and Sa's *Conjunctive Hierarchical Multi-Secret
 Sharing Scheme using Elliptic Curves*. See the
-[reference and implementation mapping](../paper/references.md).
+[reference and implementation mapping](../references/references.md).
 
-The paper's Section 3.1 chooses keys in the prime field and publishes
+The target scheme's Section 3.1 chooses keys in the prime field and publishes
 
-\[
-v_i=e(P,iQ)+K_i=z^i+K_i,\qquad z=e(P,Q),\qquad K_i\in\mathbb F_p.
-\]
+$$v_i=e(P,iQ)+K_i=z^i+K_i,\qquad z=e(P,Q),\qquad K_i\in\mathbb F_p.$$
 
 The equality `e(P,iQ)=z^i` follows from bilinearity. The two-value attack
 recovers `z` without a compromised key. The one-key attack recovers `z`
@@ -54,30 +52,19 @@ The report's computational examples correspond to these directories:
   `one_key/bls12_381/`;
 - one-public-value candidate search: `one_value/`.
 
-The derivations and worked one-value calculation are in the authoritative
-[LaTeX report](../gen_report/pairing_mask_cryptanalysis.tex) and its
-[compiled PDF](../gen_report/pairing_mask_cryptanalysis.pdf).
-
 ## Two public values: Frobenius recovery
 
 Because `K_i^p=K_i`, define
 
-\[
-A=v_1^p-v_1=z^p-z,\qquad
-B=v_2^p-v_2=z^{2p}-z^2.
-\]
+$$A=v_1^p-v_1=z^p-z,\qquad B=v_2^p-v_2=z^{2p}-z^2.$$
 
 Substituting `z^p=z+A` gives
 
-\[
-B=(z+A)^2-z^2=2Az+A^2.
-\]
+$$B=(z+A)^2-z^2=2Az+A^2.$$
 
 For odd characteristic and `A != 0`, this determines
 
-\[
-z=\frac{B-A^2}{2A},\qquad K_i=v_i-z^i.
-\]
+$$z=\frac{B-A^2}{2A},\qquad K_i=v_i-z^i.$$
 
 The required public values have indices 1 and 2. Once their common mask is
 known, the attacker can recover each subsequent published key. The attack
@@ -102,9 +89,7 @@ the identity conclusion requires a separate analysis.
 
 Given the first key and its public masked value,
 
-\[
-z=v_1-K_1,\qquad K_i=v_i-z^i.
-\]
+$$z=v_1-K_1,\qquad K_i=v_i-z^i.$$
 
 This attack does not require a Frobenius calculation. It uses the first
 compromised key as an explicit input; it does not recover it from dealer
@@ -120,7 +105,7 @@ attacker prompts for the leaked key and never reads `dealer_truth.json`.
 
 The toy fields use `X^3+3X+42` with power basis `1,alpha,alpha^2`, and curve
 `y^2=x^3+4x+15`. This polynomial corrects the paper's inconsistent suggested
-encoding, as explained in [paper/references.md](../paper/references.md).
+encoding, as explained in [references/references.md](../references/references.md).
 The one-key and two-value toy dealers use coefficients `a11=11`, `a21=33`,
 so `Q=7P`, matching the local two-level fixture.
 The paper's three-level example adds `a31=6` and uses `Q=13P`; it is distinct
@@ -147,8 +132,7 @@ mask `w=v1-k`. A valid mask satisfies `w^37=1`, so its norm obeys
 The attacker enumerates all 47 possible keys, retains those with norm 1,
 then checks the exact subgroup condition `w^37=1`. For the displayed
 fixture the norm candidates are `[8,12,29]`, and only `8` survives. This
-demonstrates recovery for this corrected numerical fixture, as calculated in
-[the LaTeX report](../gen_report/pairing_mask_cryptanalysis.tex).
+demonstrates recovery for this corrected numerical fixture.
 
 The norm condition alone is insufficient. Even after subgroup filtering,
 some other valid transcripts have two consistent keys. The attacker reports

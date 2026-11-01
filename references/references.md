@@ -18,4 +18,4 @@ The source paper suggests $X^3+X+4$ while retaining point coordinates that do no
 
 The one-value demonstration uses the corrected encoding and the paper's first public masked value for $Q=13P$, $K_1=8$. The one-key and two-value toy transcripts use the local $Q=7P$ fixture. The BLS12-381 experiments instantiate the same masking relation with standard $G_1/G_2$ generators and a reduced Tate pairing; these are local masking-layer experiments, not parameters or a full protocol implementation from publication 3.
 
-The authoritative report source and compiled PDF are in [`gen_report/`](../gen_report/). See the [attack guide](../attack/README.md) for commands, transcript formats, and verifier limits.
+The accompanying paper, *Cryptanalysis of Pairing-Based Additive Masking with Prime-Field Secrets*, is maintained separately from this code repository and contains the derivations and computational analysis. See the [attack guide](../attack/README.md) for commands, transcript formats, and verifier limits.
